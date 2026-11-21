@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[팩트만콕 공식 계산기] 연장·야간·휴일근로 수당 계산기 (2026년 기준)</title>
+    <meta name="author" content="팩트만콕 (blog.naver.com/facts_only)">
+    <meta name="description" content="2026년 근로기준법 제56조 기준 연장·야간·휴일근로 법정 가산수당을 10초 만에 정확히 계산해 보세요. © 팩트만콕">
+    <meta property="og:title" content="[팩트만콕 전용 계산기] 연장·야간·휴일근로 수당 계산기">
+    <meta property="og:description" content="내 통상시급과 시간만 넣으면 법정 가산수당(1.5배·2.0배)과 중복가산까지 자동 계산! (blog.naver.com/facts_only)">
+    <meta property="og:type" content="website">
+    <style>
+        :root {
+            --primary: #1a365d;
+            --primary-light: #2b6cb0;
+            --accent: #d97706;
+            --accent-bg: #fef3c7;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Malgun Gothic', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.55;
+            padding: 16px;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .brand-header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: #fff;
+            padding: 24px 22px;
+            text-align: center;
+        }
+        .brand-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 255, 255, 0.14);
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            padding: 4px 12px;
+            border-radius: 999px;
+            font-size: 12px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .brand-header h1 {
+            font-size: 21px;
+            font-weight: 800;
+            margin-bottom: 6px;
+            letter-spacing: -0.4px;
+        }
+        .brand-header p {
+            font-size: 13px;
+            color: #cbd5e1;
+        }
+        .main-body {
+            padding: 22px;
+        }
+        .mode-tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 10px;
+            margin-bottom: 18px;
+        }
+        .mode-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 10px 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--muted);
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .mode-btn.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+        }
+        .section-title {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .quick-fill {
+            font-size: 12px;
+            color: var(--primary-light);
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 3px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+        @media (max-width: 540px) {
+            .grid-2 { grid-template-columns: 1fr; }
+        }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #334155;
+        }
+        label span.sub {
+            font-weight: 500;
+            color: var(--muted);
+            font-size: 11.5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 11px 12px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text);
+            background: #fff;
+        }
+        .helper-text {
+            font-size: 12px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+        .hourly-preview {
+            background: #f8fafc;
+            border: 1px dashed #94a3b8;
+            border-radius: 8px;
+            padding: 10px 14px;
+            font-size: 13.5px;
+            margin-bottom: 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .hourly-preview strong {
+            color: var(--primary);
+            font-size: 16px;
+        }
+        .divider {
+            height: 1px;
+            background: var(--border);
+            margin: 18px 0;
+        }
+        .result-card {
+            background: linear-gradient(180deg, #f8fafc 0%, #eff6ff 100%);
+            border: 1.5px solid #bfdbfe;
+            border-radius: 14px;
+            padding: 20px;
+            margin-top: 8px;
+        }
+        .result-top {
+            text-align: center;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #dbeafe;
+        }
+        .result-top .label {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary-light);
+        }
+        .result-top .total-amount {
+            font-size: 30px;
+            font-weight: 900;
+            color: #0f172a;
+            margin: 4px 0;
+            letter-spacing: -0.5px;
+        }
+        .result-top .sub-info {
+            font-size: 12.5px;
+            color: var(--muted);
+        }
+        .breakdown-list {
+            margin-top: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .breakdown-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            background: #fff;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 13.5px;
+            border: 1px solid #e2e8f0;
+        }
+        .breakdown-item .val {
+            font-weight: 800;
+            color: #0f172a;
+            white-space: nowrap;
+        }
+        .tag {
+            display: inline-block;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-right: 6px;
+            background: #e0e7ff;
+            color: #1e40af;
+        }
+        .fact-diagnosis {
+            margin-top: 14px;
+            background: var(--accent-bg);
+            border-left: 4px solid var(--accent);
+            padding: 12px 14px;
+            border-radius: 8px;
+            font-size: 13px;
+            color: #78350f;
+        }
+        .fact-diagnosis strong {
+            display: block;
+            margin-bottom: 3px;
+            font-size: 13.5px;
+        }
+        .action-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        @media (max-width: 480px) {
+            .action-row { grid-template-columns: 1fr; }
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+        .btn-copy {
+            background: #0f172a;
+            color: #fff;
+        }
+        .btn-blog {
+            background: #03c75a;
+            color: #fff;
+        }
+        .related-box {
+            margin-top: 22px;
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            background: #fff;
+        }
+        .related-box h3 {
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+        .related-links {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .related-link {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            text-decoration: none;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .related-link:hover {
+            background: #eff6ff;
+            border-color: #93c5fd;
+        }
+        .related-link span.ep {
+            color: var(--primary-light);
+            font-weight: 800;
+            margin-right: 6px;
+        }
+        .cc-footer {
+            background: #f8fafc;
+            border-top: 1px solid var(--border);
+            padding: 18px 22px;
+            text-align: center;
+            font-size: 12px;
+            color: var(--muted);
+        }
+        .cc-badges {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            color: #475569;
+        }
+        .cc-pill {
+            border: 1.5px solid #94a3b8;
+            border-radius: 999px;
+            padding: 1px 7px;
+            font-size: 11px;
+            font-weight: 800;
+        }
+        .cc-footer a {
+            color: var(--primary-light);
+            font-weight: 700;
+            text-decoration: none;
+        }
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(15, 23, 42, 0.92);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.25s;
+            z-index: 999;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="brand-header">
+        <div class="brand-badge">🐻‍❄️ 팩트만콕 공식 시뮬레이터 · EP. 1 연동</div>
+        <h1>연장·야간·휴일근로 수당 계산기</h1>
+        <p>근로기준법 제56조 기준 · 2026년 주 40시간 사업장(5인 이상) 팩트체크</p>
+    </div>
+
+    <div class="main-body">
+        <div class="mode-tabs">
+            <button type="button" class="mode-btn active" id="btnHourlyMode" onclick="setMode('hourly')">① 내 통상시급을 알아요</button>
+            <button type="button" class="mode-btn" id="btnMonthlyMode" onclick="setMode('monthly')">② 월급으로 시급 자동환산</button>
+        </div>
+
+        <div class="section-title">
+            <span>1. 기본 임금 기준 입력</span>
+            <button type="button" class="quick-fill" onclick="applyMinWage()">2026 최저시급(10,320원) 적용</button>
+        </div>
+
+        <div id="hourlyInputArea" class="grid-2">
+            <div class="input-group">
+                <label for="hourlyWage">통상시급 (원) <span class="sub">기본 시급 기준</span></label>
+                <input type="number" id="hourlyWage" value="10320" min="0" step="10" oninput="calculate()">
+            </div>
+            <div class="input-group">
+                <label for="workplaceSize">사업장 상시 근로자 수</label>
+                <select id="workplaceSize" onchange="calculate()">
+                    <option value="over5" selected>5인 이상 사업장 (가산수당 1.5배 적용)</option>
+                    <option value="under5">5인 미만 사업장 (가산 없이 1.0배 지급)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="monthlyInputArea" style="display:none;">
+            <div class="grid-2">
+                <div class="input-group">
+                    <label for="monthlyWage">월 통상임금 합계 (원) <span class="sub">기본급+고정수당</span></label>
+                    <input type="number" id="monthlyWage" value="2156880" min="0" step="10000" oninput="calculate()">
+                </div>
+                <div class="input-group">
+                    <label for="monthlyHours">월 소정근로시간 <span class="sub">주 40시간=209시간</span></label>
+                    <select id="monthlyHours" onchange="calculate()">
+                        <option value="209" selected>209시간 (주 40시간 + 주휴 8시간)</option>
+                        <option value="226">226시간 (토요일 4시간 유급 포함)</option>
+                        <option value="243">243시간 (토요일 8시간 유급 포함)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="input-group" style="margin-bottom:14px;">
+                <label for="workplaceSizeMonthly">사업장 상시 근로자 수</label>
+                <select id="workplaceSizeMonthly" onchange="calculate()">
+                    <option value="over5" selected>5인 이상 사업장 (가산수당 1.5배 적용)</option>
+                    <option value="under5">5인 미만 사업장 (가산 없이 1.0배 지급)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="hourly-preview">
+            <span>계산에 적용되는 내 통상시급</span>
+            <strong id="appliedHourlyText">10,320원</strong>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="section-title">
+            <span>2. 추가 근로시간 입력 (월 합계 또는 주간 합계)</span>
+        </div>
+
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="overtimeHours">연장근로 시간 <span class="sub">1일 8시간·주 40시간 초과</span></label>
+                <input type="number" id="overtimeHours" value="10" min="0" step="0.5" oninput="calculate()">
+                <div class="helper-text">통상임금 × 1.5배 (가산 50%)</div>
+            </div>
+            <div class="input-group">
+                <label for="nightHours">야간근로 시간 <span class="sub">밤 22:00 ~ 익일 06:00</span></label>
+                <input type="number" id="nightHours" value="4" min="0" step="0.5" oninput="calculate()">
+                <div class="helper-text">해당 시간대 근무 시 0.5배 추가 가산</div>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="input-group">
+                <label for="holidayUnder8">휴일근로 (8시간 이내) <span class="sub">주휴일·공휴일 근무</span></label>
+                <input type="number" id="holidayUnder8" value="0" min="0" step="0.5" oninput="calculate()">
+                <div class="helper-text">통상임금 × 1.5배 (가산 50%)</div>
+            </div>
+            <div class="input-group">
+                <label for="holidayOver8">휴일근로 (8시간 초과분) <span class="sub">휴일 연장근로</span></label>
+                <input type="number" id="holidayOver8" value="0" min="0" step="0.5" oninput="calculate()">
+                <div class="helper-text">통상임금 × 2.0배 (휴일50%+연장50%)</div>
+            </div>
+        </div>
+
+        <div class="result-card">
+            <div class="result-top">
+                <div class="label">법정 기준 추가 수당 합계 (세전)</div>
+                <div class="total-amount" id="totalPay">0원</div>
+                <div class="sub-info" id="totalHoursInfo">총 추가 인정 시간 기준</div>
+            </div>
+
+            <div class="breakdown-list">
+                <div class="breakdown-item">
+                    <span><span class="tag" id="tagOvertime">1.5배</span>연장근로수당 (<span id="lblOvertime">0</span>시간)</span>
+                    <span class="val" id="payOvertime">0원</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><span class="tag" id="tagNight">+0.5배</span>야간근로 가산수당 (<span id="lblNight">0</span>시간)</span>
+                    <span class="val" id="payNight">0원</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><span class="tag" id="tagHol8">1.5배</span>휴일근로수당 8시간 이내 (<span id="lblHol8">0</span>시간)</span>
+                    <span class="val" id="payHol8">0원</span>
+                </div>
+                <div class="breakdown-item">
+                    <span><span class="tag" id="tagHolOver8">2.0배</span>휴일근로수당 8시간 초과 (<span id="lblHolOver8">0</span>시간)</span>
+                    <span class="val" id="payHolOver8">0원</span>
+                </div>
+            </div>
+
+            <div class="fact-diagnosis" id="diagnosisBox">
+                <strong>💡 팩트만콕 체크포인트</strong>
+                <span id="diagnosisText">계산 중...</span>
+            </div>
+
+            <div class="action-row">
+                <button type="button" class="btn btn-copy" onclick="copyResult()">📋 계산 결과 복사 (출처 포함)</button>
+                <a href="https://blog.naver.com/facts_only" target="_blank" rel="noopener" class="btn btn-blog">🏠 팩트만콕 블로그 홈 가기</a>
+            </div>
+        </div>
+
+        <div class="related-box">
+            <h3>📚 계산기 결과와 함께 꼭 봐야 할 팩트만콕 시리즈</h3>
+            <div class="related-links">
+                <a href="https://blog.naver.com/facts_only/224478395631" target="_blank" rel="noopener" class="related-link">
+                    <span><span class="ep">[EP. 1]</span>연장·야간·휴일근로 수당 계산법 및 법정 가산수당 팩트체크</span>
+                    <span>→</span>
+                </a>
+                <a href="https://blog.naver.com/facts_only/224481053059" target="_blank" rel="noopener" class="related-link">
+                    <span><span class="ep">[EP. 5]</span>포괄임금제라 추가 수당을 안 준다고 할 때 확인 기준</span>
+                    <span>→</span>
+                </a>
+                <a href="https://blog.naver.com/facts_only/224482428695" target="_blank" rel="noopener" class="related-link">
+                    <span><span class="ep">[EP. 6]</span>지각·조퇴·결근 시 급여 공제 기준 팩트체크</span>
+                    <span>→</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="cc-footer">
+        <div class="cc-badges">
+            <span class="cc-pill">CC BY-NC-ND</span>
+            <span>저작자표시 · 비영리 · 변경금지</span>
+        </div>
+        <div>
+            © 2026 <strong>팩트만콕</strong> (<a href="https://blog.naver.com/facts_only" target="_blank" rel="noopener">blog.naver.com/facts_only</a>) · 본 계산기 및 산출 구조의 무단 복제·수정·상업적 이용을 금합니다.
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">계산 결과가 클립보드에 복사되었습니다!</div>
+
+<script>
+    let currentMode = 'hourly';
+    let lastSummaryText = '';
+
+    function setMode(mode) {
+        currentMode = mode;
+        document.getElementById('btnHourlyMode').classList.toggle('active', mode === 'hourly');
+        document.getElementById('btnMonthlyMode').classList.toggle('active', mode === 'monthly');
+        document.getElementById('hourlyInputArea').style.display = mode === 'hourly' ? 'grid' : 'none';
+        document.getElementById('monthlyInputArea').style.display = mode === 'monthly' ? 'block' : 'none';
+        calculate();
+    }
+
+    function applyMinWage() {
+        document.getElementById('hourlyWage').value = 10320;
+        document.getElementById('monthlyWage').value = 2156880;
+        document.getElementById('monthlyHours').value = '209';
+        calculate();
+    }
+
+    function calculate() {
+        let hourly = 0;
+        let size = 'over5';
+
+        if (currentMode === 'hourly') {
+            hourly = parseFloat(document.getElementById('hourlyWage').value) || 0;
+            size = document.getElementById('workplaceSize').value;
+        } else {
+            const monthly = parseFloat(document.getElementById('monthlyWage').value) || 0;
+            const mHours = parseFloat(document.getElementById('monthlyHours').value) || 209;
+            hourly = mHours > 0 ? (monthly / mHours) : 0;
+            size = document.getElementById('workplaceSizeMonthly').value;
+        }
+
+        document.getElementById('appliedHourlyText').textContent = Math.round(hourly).toLocaleString() + '원';
+
+        const otH = parseFloat(document.getElementById('overtimeHours').value) || 0;
+        const nightH = parseFloat(document.getElementById('nightHours').value) || 0;
+        const hol8H = parseFloat(document.getElementById('holidayUnder8').value) || 0;
+        const holOver8H = parseFloat(document.getElementById('holidayOver8').value) || 0;
+
+        const multOvertime = size === 'over5' ? 1.5 : 1.0;
+        const multNight = size === 'over5' ? 0.5 : 0.0;
+        const multHol8 = size === 'over5' ? 1.5 : 1.0;
+        const multHolOver8 = size === 'over5' ? 2.0 : 1.0;
+
+        document.getElementById('tagOvertime').textContent = multOvertime.toFixed(1) + '배';
+        document.getElementById('tagNight').textContent = '+' + multNight.toFixed(1) + '배';
+        document.getElementById('tagHol8').textContent = multHol8.toFixed(1) + '배';
+        document.getElementById('tagHolOver8').textContent = multHolOver8.toFixed(1) + '배';
+
+        const payOt = Math.round(hourly * otH * multOvertime);
+        const payNight = Math.round(hourly * nightH * multNight);
+        const payHol8 = Math.round(hourly * hol8H * multHol8);
+        const payHolOver8 = Math.round(hourly * holOver8H * multHolOver8);
+        const total = payOt + payNight + payHol8 + payHolOver8;
+
+        document.getElementById('lblOvertime').textContent = otH;
+        document.getElementById('lblNight').textContent = nightH;
+        document.getElementById('lblHol8').textContent = hol8H;
+        document.getElementById('lblHolOver8').textContent = holOver8H;
+
+        document.getElementById('payOvertime').textContent = payOt.toLocaleString() + '원';
+        document.getElementById('payNight').textContent = payNight.toLocaleString() + '원';
+        document.getElementById('payHol8').textContent = payHol8.toLocaleString() + '원';
+        document.getElementById('payHolOver8').textContent = payHolOver8.toLocaleString() + '원';
+        document.getElementById('totalPay').textContent = total.toLocaleString() + '원';
+
+        document.getElementById('totalHoursInfo').textContent =
+            `적용 통상시급 ${Math.round(hourly).toLocaleString()}원 · ${size === 'over5' ? '5인 이상 가산 적용' : '5인 미만(가산 미적용)'}`;
+
+        let diag = '';
+        if (size === 'under5') {
+            diag = '상시 5인 미만 사업장은 근로기준법 제56조 가산수당(50%) 의무가 적용되지 않아 통상시급 1.0배로 계산됩니다. 단, 실제 일한 시간만큼의 기본 시급은 반드시 지급되어야 합니다.';
+        } else if (nightH > 0 && (otH > 0 || hol8H > 0)) {
+            diag = '야간근로(22:00~06:00)가 연장 또는 휴일근로와 겹치면 가산수당이 중복 적용됩니다. 위 금액은 [연장/휴일 1.5배]에 [야간 가산 0.5배]를 합산한 실제 받을 금액입니다.';
+        } else if (otH > 52) {
+            diag = '월 연장근로 시간이 52시간(주 평균 12시간)을 초과하는 수준입니다. 법정 연장근로 한도 위반 소지가 있으며, 실제 일한 초과근로수당은 전액 청구 가능합니다.';
+        } else {
+            diag = '급여명세서의 연장·야간·휴일수당 항목이 위 금액보다 적다면 ① 통상임금 산정 시 고정수당 누락 여부, ② 포괄임금제 약정 여부를 먼저 확인해 보세요.';
+        }
+        document.getElementById('diagnosisText').textContent = diag;
+
+        lastSummaryText =
+`[팩트만콕 공식 계산기 산출 결과]
+· 적용 통상시급: ${Math.round(hourly).toLocaleString()}원 (${size === 'over5' ? '5인 이상' : '5인 미만'})
+· 연장(${otH}h): ${payOt.toLocaleString()}원 / 야간가산(${nightH}h): ${payNight.toLocaleString()}원
+· 휴일8h이내(${hol8H}h): ${payHol8.toLocaleString()}원 / 휴일8h초과(${holOver8H}h): ${payHolOver8.toLocaleString()}원
+▶ 예상 추가 수당 합계: ${total.toLocaleString()}원
+
+※ 기준 확인 및 상세 팩트체크 (CC BY-NC-ND): https://blog.naver.com/facts_only/224478395631`;
+    }
+
+    function copyResult() {
+        navigator.clipboard.writeText(lastSummaryText).then(() => {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2200);
+        });
+    }
+
+    calculate();
+</script>
+</body>
+</html>
